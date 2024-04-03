@@ -299,5 +299,6 @@ pyrightconfig.json
 
 # Folder Image
 wm_images/
-augmented_data/
-processed_data/
+augmented_images/
+copy_images/
+
