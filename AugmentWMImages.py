@@ -113,7 +113,7 @@ copy_data_dir = 'copy_images'
 augmented_data_dir = 'augmented_images'
 
 # 테스트, 학습, 검증 데이터 폴더경로
-dataset_dir = ['test', 'train', 'val']
+dataset_dir = ['train']
 
 # 레이블 리스트
 labels = os.listdir(os.path.join(original_data_dir, 'train'))
