@@ -16,108 +16,88 @@ import torch
 import torch.nn as nn
 
 
-class DeepCNN(nn.Module):
+class CNN(nn.Module):
     def __init__(self):
-        super(DeepCNN, self).__init__()
+        super(CNN, self).__init__()
 
-        # 첫 번째 Conv층
-        self.conv1 = nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3, padding=1)
+        # Convolutional Layer 그룹 1
+        self.conv1 = nn.Conv2d(3, 16, kernel_size=3, padding=0)
         self.bn1 = nn.BatchNorm2d(16)
-        self.relu = nn.ReLU()
-
-        # 두 번째 Conv층
+        self.pool1 = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(16, 16, kernel_size=3, padding=1)
-        self.bn2 = nn.BatchNorm2d(16)
 
-        # 세 번째 Conv층
+        # Convolutional Layer 그룹 2
         self.conv3 = nn.Conv2d(16, 32, kernel_size=3, padding=1)
-        self.bn3 = nn.BatchNorm2d(32)
-
-        # 네 번째 Conv층
+        self.bn2 = nn.BatchNorm2d(32)
+        self.pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
         self.conv4 = nn.Conv2d(32, 32, kernel_size=3, padding=1)
-        self.bn4 = nn.BatchNorm2d(32)
 
-        # 다섯 번째 Conv층
+        # Convolutional Layer 그룹 3
         self.conv5 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
-        self.bn5 = nn.BatchNorm2d(64)
-
-        # 여섯 번째 Conv층
+        self.bn3 = nn.BatchNorm2d(64)
+        self.pool3 = nn.MaxPool2d(kernel_size=2, stride=2)
         self.conv6 = nn.Conv2d(64, 64, kernel_size=3, padding=1)
-        self.bn6 = nn.BatchNorm2d(64)
 
-        # 일곱 번째 Conv층
+        # Convolutional Layer 그룹 4
         self.conv7 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
-        self.bn7 = nn.BatchNorm2d(128)
-
-        # 여덟 번째 Conv층
+        self.bn4 = nn.BatchNorm2d(128)
+        self.pool4 = nn.MaxPool2d(kernel_size=2, stride=2)
         self.conv8 = nn.Conv2d(128, 128, kernel_size=3, padding=1)
-        self.bn8 = nn.BatchNorm2d(128)
 
-        # 풀링층
-        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
+        # Spatial Dropout
+        self.dropout = nn.Dropout2d(p=0.2)
+        self.pool5 = nn.MaxPool2d(kernel_size=2, stride=2)
 
-        # 드롭아웃
-        self.dropout = nn.Dropout(0.5)
-
-        # 완전 연결(FC) 계층
-        self.fc1 = nn.Linear(128 * 7 * 7, 512)
-        self.fc2 = nn.Linear(512, 10)  # 출력층
+        # Fully Connected Layers
+        self.flatten = nn.Flatten()
+        # self.flatten = nn.Linear(128*6*6, 4608)
+        self.dense = nn.Linear(4608, 512)
+        # 출력층 크기를 9
+        self.out = nn.Linear(512, 9)
 
     def forward(self, x):
-        # 첫 번째 Conv층과 ReLU 활성화 함수
-        x = self.relu(self.bn1(self.conv1(x)))
+        # Conv-Pool-Conv 그룹 1
+        x = nn.ReLU()(self.bn1(self.conv1(x)))
+        x = self.pool1(x)
+        x = nn.ReLU()(self.bn1(self.conv2(x)))
 
-        # 두 번째 Conv층과 ReLU 활성화 함수
-        x = self.relu(self.bn2(self.conv2(x)))
+        # Conv-Pool-Conv 그룹 2
+        x = nn.ReLU()(self.bn2(self.conv3(x)))
+        x = self.pool2(x)
+        x = nn.ReLU()(self.bn2(self.conv4(x)))
 
-        # 첫 번째 풀링층
-        x = self.pool(x)
+        # Conv-Pool-Conv 그룹 3
+        x = nn.ReLU()(self.bn3(self.conv5(x)))
+        x = self.pool3(x)
+        x = nn.ReLU()(self.bn3(self.conv6(x)))
 
-        # 세 번째 Conv층과 ReLU 활성화 함수
-        x = self.relu(self.bn3(self.conv3(x)))
+        # Conv-Pool-Conv 그룹 4
+        x = nn.ReLU()(self.bn4(self.conv7(x)))
+        x = self.pool4(x)
+        x = nn.ReLU()(self.bn4(self.conv8(x)))
 
-        # 네 번째 Conv층과 ReLU 활성화 함수
-        x = self.relu(self.bn4(self.conv4(x)))
-
-        # 두 번째 풀링층
-        x = self.pool(x)
-
-        # 다섯 번째 Conv층과 ReLU 활성화 함수
-        x = self.relu(self.bn5(self.conv5(x)))
-
-        # 여섯 번째 Conv층과 ReLU 활성화 함수
-        x = self.relu(self.bn6(self.conv6(x)))
-
-        # 세 번째 풀링층
-        x = self.pool(x)
-
-        # 일곱 번째 Conv층과 ReLU 활성화 함수
-        x = self.relu(self.bn7(self.conv7(x)))
-
-        # 여덟 번째 Conv층과 ReLU 활성화 함수
-        x = self.relu(self.bn8(self.conv8(x)))
-
-        # 네 번째 풀링층
-        x = self.pool(x)
-
-        # 평탄화
-        x = x.view(-1, 128 * 7 * 7)
-
-        # FC 계층과 ReLU 활성화 함수
-        x = self.relu(self.fc1(x))
+        # Spatial Dropout
         x = self.dropout(x)
-        x = self.fc2(x)
+        x = self.pool5(x)
+
+        # Fully Connected Layers
+        x = nn.ReLU()(self.flatten(x))
+        x = nn.ReLU()(self.dense(x))
+        # Softmax 출력층
+        x = nn.Softmax(dim=1)(self.out(x))
 
         return x
 
 
 # 모델 인스턴스 생성
-model = DeepCNN()
+model = CNN()
 
-# 모멘텀 최적화와 RMSProp(Root Mean Squared Prop)의 개념을 결합한 Adam 최적화 방법을 옵티마이저로 선택
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08)
+# Adam 최적화 사용
+optimizer = torch.optim.Adam(model.parameters())
 
-# 배치 크기와 에포크(epoch) 수와 같은 몇몇 다른 매개변수에 각각 100 및 20이 할당
+print(model)
+
+# 배치 크기와 에포크(epoch) 수
 batch_size = 100
 epochs = 20
 
