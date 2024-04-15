@@ -154,6 +154,7 @@ for label in labels:
     # 10,000개 이상인 경우 무작위 데이터 10,000개 선택
     if num_images >= 10000:
         augmented_images = random.sample(label_images, 10000)
+        imageName = 'Origin'
         log(f"Selected 10,000 original images for label {label}.")
     else:
         # 10,000개 미만인 경우 원본 데이터를 그대로 복사
