@@ -2,8 +2,6 @@
 import os
 import shutil
 import random
-from tkinter import Image
-
 import cv2
 import numpy as np
 from datetime import datetime
@@ -51,6 +49,7 @@ def augment_image(image, ratio):
         channel_shift_val = random.randint(-20, 20)
         image = image + channel_shift_val
         image = np.clip(image, 0, 255)
+
     return image
 
 
@@ -154,7 +153,6 @@ for label in labels:
     # 10,000개 이상인 경우 무작위 데이터 10,000개 선택
     if num_images >= 10000:
         augmented_images = random.sample(label_images, 10000)
-        imageName = 'Origin'
         log(f"Selected 10,000 original images for label {label}.")
     else:
         # 10,000개 미만인 경우 원본 데이터를 그대로 복사
@@ -166,7 +164,6 @@ for label in labels:
         # 원본 데이터 중 모자란 부분에 대해서만 데이터 증강 수행
         target_count = 10000
         augmented_images, count = augment_data(label_images, target_count, augmentation_ratio)
-
         log(f"Augmented {count - num_images} images for label {label}.")
 
     # 증강된 이미지를 저장할 폴더 경로 설정
@@ -175,7 +172,4 @@ for label in labels:
 
     # 증강된 이미지를 레이블 폴더에 저장
     for idx, augmented_img in enumerate(augmented_images):
-        augmented_img = augmented_img.resize((224, 224), Image)
-        cv2.imwrite(os.path.join(augmented_label_folder, f'{augmented_img}.bmp'), augmented_img)
-
-
+        cv2.imwrite(os.path.join(augmented_label_folder, f'{idx}.bmp'), augmented_img)
